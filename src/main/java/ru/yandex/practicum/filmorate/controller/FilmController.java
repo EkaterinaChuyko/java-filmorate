@@ -46,7 +46,7 @@ public class FilmController {
             throw new ValidationException("Дата релиза не может быть раньше 28 декабря 1895 года");
         }
 
-        Film created = filmService.addFilm(film);
+        Film created = filmService.createFilm(film);
         log.info("Добавлен фильм: {}", created);
         return created;
     }
