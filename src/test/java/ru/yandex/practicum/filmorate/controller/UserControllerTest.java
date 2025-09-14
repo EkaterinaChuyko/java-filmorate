@@ -41,8 +41,7 @@ class UserControllerTest {
         user.setEmail("invalid-email");
         user.setLogin("testuser");
 
-        ValidationException ex = assertThrows(ValidationException.class,
-                () -> controller.create(user));
+        ValidationException ex = assertThrows(ValidationException.class, () -> controller.create(user));
         assertEquals("Email должен содержать '@'", ex.getMessage());
     }
 
@@ -52,8 +51,7 @@ class UserControllerTest {
         user.setEmail("test@example.com");
         user.setLogin("   ");
 
-        ValidationException ex = assertThrows(ValidationException.class,
-                () -> controller.create(user));
+        ValidationException ex = assertThrows(ValidationException.class, () -> controller.create(user));
         assertEquals("Логин не может быть пустым или содержать пробелы", ex.getMessage());
     }
 
@@ -63,7 +61,7 @@ class UserControllerTest {
         user.setEmail("test@example.com");
         user.setLogin("userlogin");
         user.setName("");
-        user.setBirthday(LocalDate.of(2000,1,1));
+        user.setBirthday(LocalDate.of(2000, 1, 1));
 
         User created = controller.create(user);
         assertEquals("userlogin", created.getName());
@@ -106,7 +104,7 @@ class UserControllerTest {
         User user = new User();
         user.setLogin(login);
         user.setEmail(email);
-        user.setBirthday(LocalDate.of(2000,1,1));
+        user.setBirthday(LocalDate.of(2000, 1, 1));
         return user;
     }
 }

@@ -27,8 +27,7 @@ public class UserService {
     }
 
     public User getById(int id) {
-        return userStorage.getById(id)
-                .orElseThrow(() -> new NoSuchElementException("Пользователь не найден: " + id));
+        return userStorage.getById(id).orElseThrow(() -> new NoSuchElementException("Пользователь не найден: " + id));
     }
 
     public Collection<User> getAll() {
@@ -50,20 +49,13 @@ public class UserService {
 
     public Collection<User> getFriends(int userId) {
         User user = getById(userId);
-        return user.getFriends().stream()
-                .map(fid -> userStorage.getById(fid).orElse(null))
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+        return user.getFriends().stream().map(fid -> userStorage.getById(fid).orElse(null)).filter(Objects::nonNull).collect(Collectors.toList());
     }
 
     public Collection<User> getCommonFriends(int userId, int otherId) {
         Set<Integer> friends1 = getById(userId).getFriends();
         Set<Integer> friends2 = getById(otherId).getFriends();
 
-        return friends1.stream()
-                .filter(friends2::contains)
-                .map(fid -> userStorage.getById(fid).orElse(null))
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+        return friends1.stream().filter(friends2::contains).map(fid -> userStorage.getById(fid).orElse(null)).filter(Objects::nonNull).collect(Collectors.toList());
     }
 }

@@ -28,7 +28,7 @@ class FilmControllerTest {
         Film film = new Film();
         film.setName("Test Film");
         film.setDescription("Some description");
-        film.setReleaseDate(LocalDate.of(2000,1,1));
+        film.setReleaseDate(LocalDate.of(2000, 1, 1));
         film.setDuration(120);
 
         Film created = controller.create(film);
@@ -42,8 +42,7 @@ class FilmControllerTest {
         film.setName("");
         film.setDuration(100);
 
-        ValidationException ex = assertThrows(ValidationException.class,
-                () -> controller.create(film));
+        ValidationException ex = assertThrows(ValidationException.class, () -> controller.create(film));
         assertEquals("Название фильма не может быть пустым", ex.getMessage());
     }
 
@@ -54,8 +53,7 @@ class FilmControllerTest {
         film.setDescription("A".repeat(201));
         film.setDuration(100);
 
-        ValidationException ex = assertThrows(ValidationException.class,
-                () -> controller.create(film));
+        ValidationException ex = assertThrows(ValidationException.class, () -> controller.create(film));
         assertEquals("Описание фильма не может быть длиннее 200 символов", ex.getMessage());
     }
 
@@ -65,8 +63,7 @@ class FilmControllerTest {
         film.setName("Name");
         film.setDuration(-5);
 
-        ValidationException ex = assertThrows(ValidationException.class,
-                () -> controller.create(film));
+        ValidationException ex = assertThrows(ValidationException.class, () -> controller.create(film));
         assertEquals("Длительность фильма должны быть положительным числом", ex.getMessage());
     }
 
@@ -77,8 +74,7 @@ class FilmControllerTest {
         film.setReleaseDate(LocalDate.of(1800, 1, 1));
         film.setDuration(100);
 
-        ValidationException ex = assertThrows(ValidationException.class,
-                () -> controller.create(film));
+        ValidationException ex = assertThrows(ValidationException.class, () -> controller.create(film));
         assertEquals("Дата релиза не может быть раньше 28 декабря 1895 года", ex.getMessage());
     }
 

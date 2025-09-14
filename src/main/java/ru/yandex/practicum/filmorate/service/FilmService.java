@@ -16,21 +16,16 @@ public class FilmService {
     }
 
     public void addLike(int filmId, int userId) {
-        Film film = filmStorage.getById(filmId)
-                .orElseThrow(() -> new NoSuchElementException("Фильм не найден: " + filmId));
+        Film film = filmStorage.getById(filmId).orElseThrow(() -> new NoSuchElementException("Фильм не найден: " + filmId));
         film.getLikes().add(userId);
     }
 
     public void removeLike(int filmId, int userId) {
-        filmStorage.getById(filmId)
-                .ifPresent(f -> f.getLikes().remove(userId));
+        filmStorage.getById(filmId).ifPresent(f -> f.getLikes().remove(userId));
     }
 
     public List<Film> getPopular(int count) {
-        return filmStorage.getAll().stream()
-                .sorted((f1, f2) -> Integer.compare(f2.getLikes().size(), f1.getLikes().size()))
-                .limit(count)
-                .collect(Collectors.toList());
+        return filmStorage.getAll().stream().sorted((f1, f2) -> Integer.compare(f2.getLikes().size(), f1.getLikes().size())).limit(count).collect(Collectors.toList());
     }
 
     public Collection<Film> getAll() {
@@ -38,8 +33,7 @@ public class FilmService {
     }
 
     public Film getById(int id) {
-        return filmStorage.getById(id)
-                .orElseThrow(() -> new NoSuchElementException("Фильм не найден: " + id));
+        return filmStorage.getById(id).orElseThrow(() -> new NoSuchElementException("Фильм не найден: " + id));
     }
 
     public Film addFilm(Film film) {
