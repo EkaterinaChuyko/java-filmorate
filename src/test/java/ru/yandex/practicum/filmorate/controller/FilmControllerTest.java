@@ -4,8 +4,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -15,7 +18,9 @@ class FilmControllerTest {
 
     @BeforeEach
     void setUp() {
-        controller = new FilmController();
+        InMemoryFilmStorage storage = new InMemoryFilmStorage();
+        FilmService service = new FilmService(storage);
+        controller = new FilmController(service);
     }
 
     @Test
@@ -28,6 +33,7 @@ class FilmControllerTest {
 
         Film created = controller.create(film);
         assertNotNull(created.getId());
+        assertEquals("Test Film", created.getName());
     }
 
     @Test
@@ -74,5 +80,31 @@ class FilmControllerTest {
         ValidationException ex = assertThrows(ValidationException.class,
                 () -> controller.create(film));
         assertEquals("Дата релиза не может быть раньше 28 декабря 1895 года", ex.getMessage());
+    }
+
+    @Test
+    void addLike_andGetPopular_shouldWork() {
+
+        Film film1 = controller.create(createFilm("Film 1", 100));
+        Film film2 = controller.create(createFilm("Film 2", 120));
+        Film film3 = controller.create(createFilm("Film 3", 90));
+
+        controller.addLike(film1.getId(), 1);
+        controller.addLike(film1.getId(), 2);
+        controller.addLike(film2.getId(), 1);
+
+        List<Film> popular = controller.getPopular(2);
+        assertEquals(2, popular.size());
+        assertEquals(film1.getId(), popular.get(0).getId());
+        assertEquals(film2.getId(), popular.get(1).getId());
+    }
+
+    private Film createFilm(String name, int duration) {
+        Film film = new Film();
+        film.setName(name);
+        film.setDescription("Description for " + name);
+        film.setReleaseDate(LocalDate.of(2000, 1, 1));
+        film.setDuration(duration);
+        return film;
     }
 }
