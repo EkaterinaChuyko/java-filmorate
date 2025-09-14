@@ -4,8 +4,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -18,9 +21,20 @@ class FilmControllerTest {
 
     @BeforeEach
     void setUp() {
-        InMemoryFilmStorage storage = new InMemoryFilmStorage();
-        FilmService service = new FilmService(storage);
-        controller = new FilmController(service);
+        InMemoryFilmStorage filmStorage = new InMemoryFilmStorage();
+        InMemoryUserStorage userStorage = new InMemoryUserStorage();
+
+        UserService userService = new UserService(userStorage) {
+            @Override
+            public User getById(int id) {
+                User user = new User();
+                user.setId(id);
+                return user;
+            }
+        };
+
+        FilmService filmService = new FilmService(filmStorage, userService);
+        controller = new FilmController(filmService);
     }
 
     @Test
@@ -80,7 +94,6 @@ class FilmControllerTest {
 
     @Test
     void addLike_andGetPopular_shouldWork() {
-
         Film film1 = controller.create(createFilm("Film 1", 100));
         Film film2 = controller.create(createFilm("Film 2", 120));
         Film film3 = controller.create(createFilm("Film 3", 90));

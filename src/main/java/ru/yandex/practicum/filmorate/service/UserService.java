@@ -16,13 +16,14 @@ public class UserService {
     }
 
     public User addUser(User user) {
+        if (user.getBirthday() != null && user.getBirthday().isAfter(java.time.LocalDate.now())) {
+            throw new IllegalArgumentException("Дата рождения не может быть в будущем");
+        }
         return userStorage.add(user);
     }
 
     public User updateUser(User user) {
-        if (userStorage.getById(user.getId()).isEmpty()) {
-            throw new NoSuchElementException("Пользователь не найден: " + user.getId());
-        }
+        getById(user.getId());
         return userStorage.update(user);
     }
 
@@ -37,14 +38,20 @@ public class UserService {
     public void addFriend(int userId, int friendId) {
         User user = getById(userId);
         User friend = getById(friendId);
-
         user.getFriends().add(friendId);
         friend.getFriends().add(userId);
     }
 
     public void removeFriend(int userId, int friendId) {
-        userStorage.getById(userId).ifPresent(u -> u.getFriends().remove(friendId));
-        userStorage.getById(friendId).ifPresent(f -> f.getFriends().remove(userId));
+        User user = getById(userId);
+        User friend = getById(friendId);
+
+        if (!user.getFriends().contains(friendId)) {
+            throw new NoSuchElementException("Пользователь " + friendId + " не является другом пользователя " + userId);
+        }
+
+        user.getFriends().remove(friendId);
+        friend.getFriends().remove(userId);
     }
 
     public Collection<User> getFriends(int userId) {

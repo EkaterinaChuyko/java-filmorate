@@ -10,30 +10,11 @@ import java.util.stream.Collectors;
 @Service
 public class FilmService {
     private final FilmStorage filmStorage;
+    private final UserService userService;
 
-    public FilmService(FilmStorage filmStorage) {
+    public FilmService(FilmStorage filmStorage, UserService userService) {
         this.filmStorage = filmStorage;
-    }
-
-    public void addLike(int filmId, int userId) {
-        Film film = filmStorage.getById(filmId).orElseThrow(() -> new NoSuchElementException("Фильм не найден: " + filmId));
-        film.getLikes().add(userId);
-    }
-
-    public void removeLike(int filmId, int userId) {
-        filmStorage.getById(filmId).ifPresent(f -> f.getLikes().remove(userId));
-    }
-
-    public List<Film> getPopular(int count) {
-        return filmStorage.getAll().stream().sorted((f1, f2) -> Integer.compare(f2.getLikes().size(), f1.getLikes().size())).limit(count).collect(Collectors.toList());
-    }
-
-    public Collection<Film> getAll() {
-        return filmStorage.getAll();
-    }
-
-    public Film getById(int id) {
-        return filmStorage.getById(id).orElseThrow(() -> new NoSuchElementException("Фильм не найден: " + id));
+        this.userService = userService;
     }
 
     public Film addFilm(Film film) {
@@ -41,9 +22,34 @@ public class FilmService {
     }
 
     public Film updateFilm(Film film) {
-        if (filmStorage.getById(film.getId()).isEmpty()) {
-            throw new NoSuchElementException("Фильм не найден: " + film.getId());
-        }
+        getById(film.getId());
         return filmStorage.update(film);
+    }
+
+    public Film getById(int id) {
+        return filmStorage.getById(id).orElseThrow(() -> new NoSuchElementException("Фильм не найден: " + id));
+    }
+
+    public Collection<Film> getAll() {
+        return filmStorage.getAll();
+    }
+
+    public void addLike(int filmId, int userId) {
+        Film film = getById(filmId);
+        userService.getById(userId);
+        film.getLikes().add(userId);
+    }
+
+    public void removeLike(int filmId, int userId) {
+        Film film = getById(filmId);
+        userService.getById(userId);
+        if (!film.getLikes().contains(userId)) {
+            throw new NoSuchElementException("Пользователь " + userId + " не ставил лайк фильму " + filmId);
+        }
+        film.getLikes().remove(userId);
+    }
+
+    public List<Film> getPopular(int count) {
+        return filmStorage.getAll().stream().sorted((f1, f2) -> Integer.compare(f2.getLikes().size(), f1.getLikes().size())).limit(count).collect(Collectors.toList());
     }
 }
