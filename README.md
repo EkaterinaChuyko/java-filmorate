@@ -2,13 +2,14 @@
 Template repository for Filmorate project.
 
 
-h1 **Схема базы данных:** 
+# **Схема базы данных:** 
 
-https://dbdiagram.io/d/68d95851d2b621e42242ff73
+[Посмотреть схему базы данных](
+[Посмотреть схему базы данных](films.png)(https://dbdiagram.io/d/68d95851d2b621e42242ff73)
 
 Спроектированная база данных соответствует третьей нормальной форме (3NF) и поддерживает все бизнес-процессы приложения Filmorate.
 
-h2 **Основные таблицы:**
+## **Основные таблицы:**
 
 users – хранение данных пользователей: идентификатор, email, логин, имя и дата рождения.
 
@@ -28,37 +29,47 @@ film_likes – лайки пользователей фильмам. Один п
 
 ______________________________
 
-h1 **Примеры SQL-запросов:**
-h2 **Для пользователя:**
+# **Примеры SQL-запросов:**
+## **Для пользователя:**
 
 Общие друзья двух пользователей:
+
+```sql
 
 SELECT u.* 
 FROM users u
 JOIN friendship f1 ON u.user_id = f1.friend_id AND f1.user_id = 1
 JOIN friendship f2 ON u.user_id = f2.friend_id AND f2.user_id = 2;
+```
+
 
 Создание пользователя:
 
+```sql
 INSERT INTO users (email, login, name, birthday) 
 VALUES ('user@example.com', 'userlogin', 'User Name', '1990-01-01');
+```
 
 _____________________________________________________
 
-h2 **Для фильмов:**
+## **Для фильмов:**
+
 
 Добавление фильма по жанру:
 
+```sql
 INSERT INTO film_genres (film_id, genre_id) 
 VALUES (1, 1), (1, 2);
+```
 
 Получение 10 популярных фильмов:
 
+```sql
 SELECT f.*, COUNT(fl.user_id) AS likes_count
 FROM films f
 LEFT JOIN film_likes fl ON f.film_id = fl.film_id
 GROUP BY f.film_id
 ORDER BY likes_count DESC
 LIMIT 10;
-
+```
 
