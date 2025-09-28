@@ -4,7 +4,7 @@ Template repository for Filmorate project.
 
 # **Схема базы данных:** 
 
-[![Схема базы данных](java-filmorate/films.png)](https://dbdiagram.io/d/68d95851d2b621e42242ff73)
+[![Схема базы данных](films.png)](https://dbdiagram.io/d/68d95851d2b621e42242ff73)
 
 Спроектированная база данных соответствует третьей нормальной форме (3NF) и поддерживает все бизнес-процессы приложения Filmorate.
 
