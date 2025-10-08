@@ -1,12 +1,12 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.User;
-import lombok.extern.slf4j.Slf4j;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -41,7 +41,8 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public Optional<User> getById(int id) {
-        List<User> list = jdbcTemplate.query("SELECT * FROM users WHERE user_id=?", this::mapRowToUser, id);
+        String sql = "SELECT * FROM users WHERE user_id=?";
+        List<User> list = jdbcTemplate.query(sql, this::mapRowToUser, id);
         if (list.isEmpty()) return Optional.empty();
 
         User user = list.get(0);
@@ -57,6 +58,21 @@ public class UserDbStorage implements UserStorage {
         return users;
     }
 
+    @Override
+    public void addFriend(int userId, int friendId) {
+        String sql = "MERGE INTO friendship KEY(user_id, friend_id) VALUES (?, ?)";
+        jdbcTemplate.update(sql, userId, friendId);
+        log.debug("Добавлена дружба: {} -> {}", userId, friendId);
+    }
+
+    @Override
+    public void removeFriend(int userId, int friendId) {
+        String sql = "DELETE FROM friendship WHERE user_id = ? AND friend_id = ?";
+        jdbcTemplate.update(sql, userId, friendId);
+        log.debug("Удалена дружба: {} -> {}", userId, friendId);
+    }
+
+    @Override
     public void confirmFriend(int userId, int friendId) {
         String sql = "SELECT COUNT(*) FROM friendship WHERE user_id = ? AND friend_id = ?";
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, userId, friendId);
@@ -68,27 +84,16 @@ public class UserDbStorage implements UserStorage {
         }
     }
 
-    public void removeFriend(int userId, int friendId) {
-        String sql = "DELETE FROM friendship WHERE user_id = ? AND friend_id = ?";
-        jdbcTemplate.update(sql, userId, friendId);
-        log.debug("Удалена дружба: {} -> {}", userId, friendId);
-    }
-
+    @Override
     public List<Integer> getFriendIds(int userId) {
         String sql = "SELECT friend_id FROM friendship WHERE user_id = ?";
         return jdbcTemplate.query(sql, (rs, rowNum) -> rs.getInt("friend_id"), userId);
     }
 
+    @Override
     public List<Integer> getCommonFriends(int userId, int otherId) {
         String sql = "SELECT f1.friend_id FROM friendship f1 " + "JOIN friendship f2 ON f1.friend_id = f2.friend_id " + "WHERE f1.user_id = ? AND f2.user_id = ?";
         return jdbcTemplate.query(sql, (rs, rowNum) -> rs.getInt("friend_id"), userId, otherId);
-    }
-
-    @Override
-    public void addFriend(int userId, int friendId) {
-        String sql = "MERGE INTO friendship KEY(user_id, friend_id) VALUES (?, ?)";
-        jdbcTemplate.update(sql, userId, friendId);
-        log.debug("Добавлена дружба: {} -> {}", userId, friendId);
     }
 
     private User mapRowToUser(ResultSet rs, int rowNum) throws SQLException {

@@ -32,4 +32,19 @@ public class InMemoryFilmStorage implements FilmStorage {
     public Collection<Film> getAll() {
         return films.values();
     }
+
+    @Override
+    public void addLike(int filmId, int userId) {
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+    @Override
+    public void removeLike(int filmId, int userId) {
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+    @Override
+    public List<Film> getPopular(int count) {
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
 }

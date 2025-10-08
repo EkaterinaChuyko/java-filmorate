@@ -24,11 +24,7 @@ public class FilmService {
     private final GenreDbStorage genreDbStorage;
 
     public List<Film> getPopular(int count) {
-        String sql = "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, " + "m.rating_id as mpa_id, m.code_rate as mpa_name, m.description as mpa_description, " + "COUNT(fl.user_id) as likes_count " + "FROM films f " + "JOIN mpa_rating m ON f.rating_id = m.rating_id " + "LEFT JOIN film_likes fl ON f.film_id = fl.film_id " + "GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, " + "m.rating_id, m.code_rate, m.description " + "ORDER BY likes_count DESC " + "LIMIT ?";
-
-        List<Film> films = filmStorage.getJdbcTemplate().query(sql, filmStorage::mapRowToFilm, count);
-        films.forEach(film -> film.setGenres(filmStorage.loadGenres(film.getId())));
-        return films;
+        return filmStorage.getPopular(count);
     }
 
     public Film createFilm(Film film) {
@@ -65,24 +61,21 @@ public class FilmService {
     }
 
     public void addLike(int filmId, int userId) {
-        Film film = getById(filmId);
+        getById(filmId);
         userService.getById(userId);
-
-        String sql = "INSERT INTO film_likes (film_id, user_id) VALUES (?, ?)";
         try {
-            filmStorage.getJdbcTemplate().update(sql, filmId, userId);
+            filmStorage.addLike(filmId, userId);
         } catch (Exception e) {
             throw new IllegalArgumentException("Лайк уже существует");
         }
     }
 
     public void removeLike(int filmId, int userId) {
-        Film film = getById(filmId);
+        getById(filmId);
         userService.getById(userId);
-
-        String sql = "DELETE FROM film_likes WHERE film_id = ? AND user_id = ?";
-        int deleted = filmStorage.getJdbcTemplate().update(sql, filmId, userId);
-        if (deleted == 0) {
+        try {
+            filmStorage.removeLike(filmId, userId);
+        } catch (NoSuchElementException e) {
             throw new NoSuchElementException("Лайк от пользователя " + userId + " не найден");
         }
     }
