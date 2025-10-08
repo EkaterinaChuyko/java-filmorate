@@ -1,21 +1,25 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.film.FilmDbStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class UserService {
 
     private final UserStorage userStorage;
-
-    public UserService(UserStorage userStorage) {
-        this.userStorage = userStorage;
-    }
+    private final FilmDbStorage filmStorage;
 
     public User createUser(User user) {
         validate(user);
@@ -45,28 +49,35 @@ public class UserService {
     public void addFriend(int userId, int friendId) {
         User user = getById(userId);
         User friend = getById(friendId);
-        user.getFriends().add(friendId);
-        friend.getFriends().add(userId);
+        log.debug("Добавление дружбы: пользователь {} -> пользователь {}", userId, friendId);
+        userStorage.addFriend(userId, friendId);
+        userStorage.confirmFriend(userId, friendId);
     }
 
     public void removeFriend(int userId, int friendId) {
-        User user = getById(userId);
-        User friend = getById(friendId);
-
-        user.getFriends().remove(friendId);
-        friend.getFriends().remove(userId);
+        getById(userId);
+        getById(friendId);
+        userStorage.removeFriend(userId, friendId);
     }
 
     public Collection<User> getFriends(int userId) {
-        User user = getById(userId);
-        return user.getFriends().stream().map(this::getById).collect(Collectors.toList());
+        return userStorage.getById(userId).orElseThrow(() -> new NoSuchElementException("Пользователь не найден: " + userId)).getFriends().stream().map(this::getById).collect(Collectors.toList());
     }
 
     public Collection<User> getCommonFriends(int userId, int otherId) {
         Set<Integer> friends1 = getById(userId).getFriends();
         Set<Integer> friends2 = getById(otherId).getFriends();
-
         return friends1.stream().filter(friends2::contains).map(this::getById).collect(Collectors.toList());
+    }
+
+    public List<Film> getPopular(int count) {
+        return filmStorage.getPopular(count);
+    }
+
+    public void confirmFriend(int userId, int friendId) {
+        getById(userId);
+        getById(friendId);
+        userStorage.confirmFriend(userId, friendId);
     }
 
     private void validate(User user) {
@@ -76,7 +87,7 @@ public class UserService {
         if (user.getLogin() == null || user.getLogin().isBlank() || user.getLogin().contains(" ")) {
             throw new ValidationException("Логин не может быть пустым или содержать пробелы");
         }
-        if (user.getBirthday() != null && user.getBirthday().isAfter(java.time.LocalDate.now())) {
+        if (user.getBirthday() != null && user.getBirthday().isAfter(LocalDate.now())) {
             throw new ValidationException("Дата рождения не может быть в будущем");
         }
     }

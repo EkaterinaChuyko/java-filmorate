@@ -32,4 +32,62 @@ public class InMemoryUserStorage implements UserStorage {
     public Collection<User> getAll() {
         return users.values();
     }
+
+    @Override
+    public void addFriend(int userId, int friendId) {
+        User user = users.get(userId);
+        User friend = users.get(friendId);
+        if (user != null && friend != null) {
+            user.getFriends().add(friendId);
+        }
+    }
+
+    @Override
+    public void confirmFriend(int userId, int friendId) {
+        User user = users.get(userId);
+        User friend = users.get(friendId);
+        if (user != null && friend != null) {
+            user.getFriends().add(friendId);
+            friend.getFriends().add(userId);
+        }
+    }
+
+    @Override
+    public void removeFriend(int userId, int friendId) {
+        User user = users.get(userId);
+        User friend = users.get(friendId);
+        if (user != null) {
+            user.getFriends().remove(friendId);
+        }
+        if (friend != null) {
+            friend.getFriends().remove(userId);
+        }
+    }
+
+    @Override
+    public List<Integer> getFriendIds(int userId) {
+        User user = users.get(userId);
+        if (user != null) {
+            return new ArrayList<>(user.getFriends());
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
+    public List<Integer> getCommonFriends(int userId, int otherId) {
+        User user1 = users.get(userId);
+        User user2 = users.get(otherId);
+        if (user1 != null && user2 != null) {
+            Set<Integer> friends1 = user1.getFriends();
+            Set<Integer> friends2 = user2.getFriends();
+            List<Integer> common = new ArrayList<>();
+            for (Integer friendId : friends1) {
+                if (friends2.contains(friendId)) {
+                    common.add(friendId);
+                }
+            }
+            return common;
+        }
+        return new ArrayList<>();
+    }
 }
